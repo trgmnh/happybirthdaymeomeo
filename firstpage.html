@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hỏi nò 👀</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,400&family=Be+Vietnam+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --g0: #f0faf4;
+      --g1: #c0dd97;
+      --g2: #97c459;
+      --g3: #639922;
+      --g4: #3b6d11;
+      --g5: #27500a;
+      --t1: #9fe1cb;
+      --cream: #f8fdf4;
+    }
+
+    body {
+      font-family: 'Be Vietnam Pro', sans-serif;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--cream);
+    }
+
+    .page {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .page.hidden { opacity: 0; pointer-events: none; transform: scale(0.96); }
+
+    #page1 {
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 20%, #d4f0e0 0%, transparent 55%),
+        radial-gradient(ellipse 60% 70% at 85% 80%, #e1f5ee 0%, transparent 55%),
+        var(--cream);
+    }
+
+    .leaf-wrap { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .leaf { position: absolute; top: -40px; opacity: 0; animation: leafFall linear infinite; }
+    @keyframes leafFall {
+      0%   { opacity:0; transform:translateY(0) rotate(0deg) translateX(0); }
+      10%  { opacity:0.5; }
+      90%  { opacity:0.2; }
+      100% { opacity:0; transform:translateY(110vh) rotate(400deg) translateX(50px); }
+    }
+
+    .card {
+      background: rgba(255,255,255,0.84);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(99,153,34,0.18);
+      border-radius: 24px;
+      padding: 3rem 2.5rem 2.5rem;
+      text-align: center;
+      max-width: 360px;
+      width: calc(100vw - 2.5rem);
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 4px 60px rgba(99,153,34,0.1), 0 1px 4px rgba(0,0,0,0.04);
+      animation: cardIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity:0; transform:translateY(30px) scale(0.94); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+    .card-deco {
+      position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+      background: white; border: 1px solid rgba(99,153,34,0.22); border-radius: 50%;
+      width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+      font-size: 26px; box-shadow: 0 2px 14px rgba(99,153,34,0.14);
+    }
+    .question {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.1rem; color: var(--g5); margin: 1.2rem 0 0.4rem; line-height: 1.2;
+    }
+    .question-sub {
+      font-size: 13px; color: var(--g4); opacity: 0.6;
+      margin-bottom: 2.2rem; font-weight: 300; letter-spacing: 0.02em;
+    }
+    .btn-yes {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--g3); color: white; border: none; border-radius: 50px;
+      padding: 13px 38px; font-size: 16px; font-weight: 500;
+      font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(99,153,34,0.38);
+    }
+    .btn-yes:hover { background: var(--g4); transform: translateY(-2px); box-shadow: 0 6px 26px rgba(99,153,34,0.48); }
+    .btn-yes:active { transform: scale(0.97); }
+    .btn-no {
+      position: fixed; background: white; color: var(--g4);
+      border: 1px solid var(--g1); border-radius: 50px;
+      padding: 11px 26px; font-size: 14px;
+      font-family: 'Be Vietnam Pro', sans-serif; cursor: pointer;
+      transition: font-size 0.3s, padding 0.3s; z-index: 100; white-space: nowrap;
+    }
+    .leaf-hint { margin-top: 1.6rem; font-size: 12px; color: #9abf78; letter-spacing: 0.05em; }
+
+    #page2 {
+      background:
+        radial-gradient(ellipse 70% 60% at 15% 25%, #d4f0e0 0%, transparent 55%),
+        radial-gradient(ellipse 60% 70% at 85% 75%, #e1f5ee 0%, transparent 55%),
+        var(--cream);
+    }
+
+    /* ── SCATTERED PHOTOS ── */
+    .photo-scatter { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+    .sphoto {
+      position: absolute;
+      border-radius: 14px;
+      border: 3px solid white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+      overflow: hidden;
+      background: var(--g0);
+      opacity: 0;
+      animation: photoAppear 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    /* KEY FIX: img fills frame absolutely, object-fit cover, centered */
+    .sphoto img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      display: block;
+    }
+    .sphoto .ph-fallback {
+      position: absolute; inset: 0;
+      font-size: 22px; color: var(--g3); opacity: 0.4;
+      display: none; flex-direction: column; align-items: center;
+      justify-content: center; gap: 4px;
+    }
+    .sphoto .ph-fallback p { font-size: 9px; color: var(--g3); opacity: 0.6; font-weight: 500; }
+    @keyframes photoAppear {
+      from { opacity:0; transform: scale(0.7) rotate(var(--rot)); }
+      to   { opacity:1; transform: scale(1)   rotate(var(--rot)); }
+    }
+
+    .bday-card {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(99,153,34,0.15);
+      border-radius: 24px;
+      padding: 2.5rem 2.5rem;
+      text-align: center;
+      max-width: 400px;
+      width: calc(100vw - 2.5rem);
+      position: relative;
+      z-index: 10;
+      box-shadow: 0 8px 60px rgba(99,153,34,0.12), 0 1px 4px rgba(0,0,0,0.04);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .bday-icon {
+      font-size: 44px; display: block; margin-bottom: 0.3rem;
+      animation: bounceIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both, bobble 2.2s ease-in-out 1s infinite alternate;
+    }
+    @keyframes bounceIn { from { opacity:0; transform:scale(0.3); } to { opacity:1; transform:scale(1); } }
+    @keyframes bobble  { from { transform:translateY(0); } to { transform:translateY(-7px); } }
+    .bday-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--g5); margin: 0.3rem 0 0.2rem; }
+    .bday-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.05rem; color: var(--g4); margin-bottom: 1.1rem; opacity: 0.85; }
+    .bday-divider { border: none; border-top: 1px solid rgba(99,153,34,0.15); margin: 1.1rem 0; }
+    .bday-msg { font-size: 14px; color: #3a3a3a; line-height: 1.9; font-weight: 300; }
+    .bday-footer { margin-top: 1.3rem; font-size: 12px; color: #aaa; letter-spacing: 0.05em; }
+    .bday-from { font-size: 15px; font-weight: 500; color: var(--g4); margin-top: 4px; }
+
+    .confetti-el { position: fixed; pointer-events: none; z-index: 999; }
+    @keyframes confettiFall {
+      0%   { transform:translateY(-20px) rotate(0deg); opacity:1; }
+      100% { transform:translateY(105vh) rotate(720deg); opacity:0; }
+    }
+
+    .spark-wrap { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+    .spark { position: absolute; border-radius: 50%; opacity: 0; animation: twinkle 3s ease-in-out infinite; }
+    @keyframes twinkle {
+      0%,100% { opacity:0; transform:scale(0.4); }
+      50%      { opacity:0.45; transform:scale(1.3); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="leaf-wrap" id="leaves"></div>
+
+<!-- PAGE 1 -->
+<div class="page" id="page1">
+  <div class="card">
+    <div class="card-deco">🌿</div>
+    <h1 class="question">Iu khum?</h1>
+    <p class="question-sub">Suy nghĩ kỹ nhó...</p>
+    <button class="btn-yes" onclick="goToPage2()">Coáaaaaa 🌱</button>
+  </div>
+</div>
+<button class="btn-no" id="noBtn">Ghéc :))</button>
+
+<!-- PAGE 2 -->
+<div class="page hidden" id="page2">
+  <div class="spark-wrap" id="sparks"></div>
+  <div class="photo-scatter" id="photoScatter"></div>
+
+  <div class="bday-card">
+    <span class="bday-icon">🎂</span>
+    <h2 class="bday-title">Happy Birthday</h2>
+    <p class="bday-name">Meo Meoooooooo</p>
+    <hr class="bday-divider">
+    <p class="bday-msg">
+      1 năm vừa rồi là 1 năm anh thấy khá là vibrant với em, có nhiều cột mốc thành công,
+      thay đổi bản thân, và có cả những lúc không thuận lợi, nhưng từ những lần đó đó mà anh thấy em
+      càng ngày nhiều tiến bộ hơn. <br><br>Tuổi mới này tụi mình xa nhau, nhưng có thể thấy rõ là tình củm
+      của 2 đứa không hề phai mờ mà còn ngày càng sâu sắc hơn. Hi vọng là 2 đứa mình sẽ cùng nhau phát triển hơn nữa,
+      học hỏi trải nghiệm thêm được nhiều điều, và sẽ luôn có nhau mọi lúc khó khăn:>
+      <br><br>Anh mong là tuổi mới em sẽ gặp thật nhiều thuận lợi, mọi điều sẽ đến đúng với công sức em cố gắng,
+      rèn luyện, trau dồi kiến thức, sức khỏe của bản thân :>
+      <br><br>
+      Yêu nhiều lúm ó :>
+    </p>
+    <hr class="bday-divider">
+    <p class="bday-footer">Trụt trụt</p>
+    <p class="bday-from">Meo meo 💚</p>
+  </div>
+</div>
+
+<script>
+  /* ── Lá rơi ── */
+  const leafColors = ['#c0dd97','#97c459','#9fe1cb','#5dcaa5','#eaf3de'];
+  const leafWrap = document.getElementById('leaves');
+  for (let i = 0; i < 20; i++) {
+    const l = document.createElement('div'); l.className = 'leaf';
+    const sz = 8 + Math.random() * 10;
+    l.style.cssText = `left:${Math.random()*100}%;background:${leafColors[i%leafColors.length]};width:${sz}px;height:${sz*1.4}px;border-radius:${Math.random()>.5?'50% 0 50% 0':'0 50% 0 50%'};animation-duration:${7+Math.random()*8}s;animation-delay:${Math.random()*12}s;`;
+    leafWrap.appendChild(l);
+  }
+
+  /* ── Sparkles ── */
+  const sparkWrap = document.getElementById('sparks');
+  for (let i = 0; i < 22; i++) {
+    const s = document.createElement('div'); s.className = 'spark';
+    const sz = 4 + Math.random() * 5;
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:${Math.random()>.5?'#c0dd97':'#9fe1cb'};animation-delay:${Math.random()*3}s;`;
+    sparkWrap.appendChild(s);
+  }
+
+  /* ── Nút Không ── */
+  const noBtn = document.getElementById('noBtn');
+  let noSize = 14, noStep = 0;
+  const noLabels = ['Ghéc :))', 'Ai choa', 'Bấm có đê', 'Lì ghê :)))', 'Bấm đê'];
+  function placeNoBtn() {
+    const r = document.querySelector('.btn-yes').getBoundingClientRect();
+    noBtn.style.left = (r.right + 18) + 'px';
+    noBtn.style.top  = r.top + 'px';
+  }
+  setTimeout(placeNoBtn, 300);
+  window.addEventListener('resize', placeNoBtn);
+  noBtn.addEventListener('mouseover', () => {
+    const m = 16;
+    noBtn.style.left = Math.max(m, Math.random()*(window.innerWidth  - noBtn.offsetWidth  - m)) + 'px';
+    noBtn.style.top  = Math.max(m, Math.random()*(window.innerHeight - noBtn.offsetHeight - m)) + 'px';
+    noSize = Math.max(10, noSize - 0.7);
+    noBtn.style.fontSize = noSize + 'px';
+    noStep = (noStep + 1) % noLabels.length;
+    noBtn.textContent = noLabels[noStep];
+  });
+
+  /* ── Photos ──
+     ✏️ Đổi src thành tên file ảnh của bạn (đặt cùng thư mục index.html)
+     top/left = % màn hình, tính từ TÂM khung ảnh → không bị lệch
+  */
+  const photos = [
+    /* GÓC TRÁI TRÊN */
+    { src: 'photo1.jpg', w: 110, h: 110, top:  8, left:  8, rot: -8 },
+    { src: 'photo2.jpg', w:  90, h: 110, top: 18, left: 12, rot:  5 },
+    /* GÓC PHẢI TRÊN */
+    { src: 'photo3.jpg', w: 105, h: 100, top:  8, left: 92, rot:  7 },
+    { src: 'photo4.jpg', w:  85, h:  95, top: 18, left: 85, rot: -4 },
+    /* GÓC TRÁI DƯỚI */
+    { src: 'photo5.jpg', w: 100, h: 110, top: 82, left:  8, rot:  6 },
+    { src: 'photo6.jpg', w:  90, h:  90, top: 72, left: 13, rot: -9 },
+    /* GÓC PHẢI DƯỚI */
+    { src: 'photo7.jpg', w: 110, h: 100, top: 82, left: 92, rot: -5 },
+    { src: 'photo8.jpg', w:  85, h:  95, top: 72, left: 85, rot:  8 },
+    /* CẠNH TRÁI GIỮA */
+    { src: 'photo9.jpg',  w: 95, h:  95, top: 50, left:  6, rot: -6 },
+    /* CẠNH PHẢI GIỮA */
+    { src: 'photo10.jpg', w: 95, h:  95, top: 50, left: 94, rot:  5 },
+  ];
+
+  function buildPhotos() {
+    const scatter = document.getElementById('photoScatter');
+    scatter.innerHTML = '';
+    const vw = window.innerWidth, vh = window.innerHeight;
+    photos.forEach((p, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'sphoto';
+      /* top/left = centre of frame in px, offset by half size */
+      const x = (p.left / 100) * vw - p.w / 2;
+      const y = (p.top  / 100) * vh - p.h / 2;
+      wrap.style.cssText = `width:${p.w}px;height:${p.h}px;left:${x}px;top:${y}px;--rot:${p.rot}deg;animation-delay:${0.1+i*0.07}s;`;
+      const img = document.createElement('img');
+      img.src = p.src; img.alt = '';
+      const fb = document.createElement('div');
+      fb.className = 'ph-fallback';
+      fb.innerHTML = `<span>📷</span><p>photo${i+1}.jpg</p>`;
+      img.onerror = () => { img.style.display='none'; fb.style.display='flex'; };
+      wrap.appendChild(img);
+      wrap.appendChild(fb);
+      scatter.appendChild(wrap);
+    });
+  }
+
+  /* ── Confetti ── */
+  function spawnConfetti() {
+    const colors = ['#639922','#1d9e75','#c0dd97','#9fe1cb','#3b6d11','#97c459','#5dcaa5'];
+    for (let i = 0; i < 65; i++) {
+      const el = document.createElement('div'); el.className = 'confetti-el';
+      const sz = 6 + Math.random() * 8;
+      el.style.cssText = `left:${10+Math.random()*80}%;top:${Math.random()*25}%;width:${sz}px;height:${sz}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>.5?'50%':'2px'};animation:confettiFall ${1.4+Math.random()*1.2}s ease-in ${Math.random()*.6}s forwards;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3000);
+    }
+  }
+
+  /* ── Chuyển trang ── */
+  function goToPage2() {
+    spawnConfetti();
+    noBtn.style.display = 'none';
+    leafWrap.style.display = 'none';
+    buildPhotos();
+    setTimeout(() => {
+      document.getElementById('page1').classList.add('hidden');
+      document.getElementById('page2').classList.remove('hidden');
+    }, 700);
+  }
+</script>
+</body>
+</html>
